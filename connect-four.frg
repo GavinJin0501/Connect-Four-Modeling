@@ -76,6 +76,56 @@ pred winning[b: Board, p: Player] {
     }) 
 }
 
+pred inBounds[r: Int, c: Int] {
+  r>=0 r<=5
+  c>=0 c<=6
+}
+
+pred move[pre: Board, 
+          row, col: Int, 
+          turn: Player, 
+          post: Board] {
+    -- guard: conditions necessary to make a move  
+    -- cant move somewhere with an existing mark
+    -- valid move location
+    -- it needs to be the player's turn 
+    no pre.position[row][col]
+    turn = Red implies red_turn[pre]
+    turn = Yellow implies yellow_turn[pre]
+
+    -- prevent winning boards from progressing
+    all p: Player | not winning[pre, p]
+
+    -- enforce valid move index
+    inBounds[row, col]
+    row = 0 or some pre.position[subtract[row, 1], col]
+
+    -- balanced game
+    -- game hasn't been won yet
+    -- if it's a tie can't move 
+    -- board needs to be well-formed 
+
+    -- action: effects of making a move
+
+    -- mark the location with the player 
+    post.position[row][col] = turn 
+    -- updating the board; check for winner or tie 
+    -- other squares stay the same  ("frame condition")
+    all row2: Int, col2: Int | (row!=row2 or col!=col2) implies {
+        post.position[row2][col2] = pre.position[row2][col2]
+    }
+}
+
+pred doNothing[pre, post: Board] {
+    -- guard
+    some p: Player | winning[pre, p]
+
+    -- action
+    all r, c: Int | {
+        pre.position[r][c] = post.position[r][c]
+    }
+}
+
 one sig Game {
     first: one Board, 
     next: pfunc Board -> Board
@@ -84,10 +134,15 @@ one sig Game {
 pred game_trace {
     wellformed
     initial[Game.first]
-    some g: Board | {
-        winning[g, Red]    
-    }
-    
+    // some g: Board | {
+    //     winning[g, Red]    
+    // }
+    all b: Board | { some Game.next[b] implies {
+        (some row, col: Int, p: Player | 
+            move[b, row, col, p, Game.next[b]])
+        or
+        doNothing[b, Game.next[b]]
+    }}
 }
 
-run {game_trace}
+run {game_trace} for 3 Board for {next is linear}
