@@ -25,7 +25,7 @@ function loadSources() {
 
 
 
-function gridFENString(board) {
+function boardFENString(board) {
 
   var boardArr = [];
   for (r = 0; r < 8; r++) {
@@ -59,17 +59,19 @@ function gridFENString(board) {
 
 function loadChessboard() {
   //setColors();
-  let grid = Grid
-  var config = {
-    pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
-    position: gridFENString(grid)
-  }
-  var chessboard = document.createElement('div');
-  var boardName = 'board' ;
-  chessboard.setAttribute('id',boardName);
-  chessboard.setAttribute('style','width: 300px; margin: 10px');
-  div.appendChild(chessboard);
-  var board1 = Chessboard(boardName, config)
+  let board = Board
+    var config = {
+      pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+      position: boardFENString(board)
+    }
+    var chessboard = document.createElement('div');
+    var boardName = 'board' ;
+    chessboard.setAttribute('id',boardName);
+    chessboard.setAttribute('style','width: 300px; margin: 10px');
+    div.appendChild(chessboard);
+    var board1 = Chessboard(boardName, config)
+  
+
 }
 
 div.innerHTML = '';
