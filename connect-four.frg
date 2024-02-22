@@ -76,6 +76,15 @@ pred winning[b: Board, p: Player] {
     }) 
 }
 
+// pred tie[b: Board, p1, p2: Player] {
+//     // not winning[b, p1]
+//     // not winning[b, p2]
+//     all row, col: Int | {
+//         inBounds[row, col] implies some b.position[row][col]
+//     }
+// }
+
+
 pred inBounds[r: Int, c: Int] {
   r>=0 r<=5
   c>=0 c<=6
@@ -145,4 +154,4 @@ pred game_trace {
     }}
 }
 
-run {game_trace} for 3 Board for {next is linear}
+run {game_trace} for 15 Board for {next is linear}
