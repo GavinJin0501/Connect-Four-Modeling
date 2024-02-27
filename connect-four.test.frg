@@ -11,6 +11,30 @@ pred positiveWellFormed {
     }
 }
 
+pred fullBoard {
+    all b: Board | {
+        all row, col: Int | {
+            not inBounds[row, col] implies no b.position[row][col]
+        }
+    }
+}
+
+pred noNegativeEntryBoard {
+    all b: Board | {
+        all row, col: Int | {
+            (row < 0 or col < 0) implies no b.position[row][col]
+        }
+    }
+}
+
+pred noOverSizeEntryBoard {
+    all b: Board | {
+        all row, col: Int | {
+            (row > 5 or col > 6) implies no b.position[row][col]
+        }
+    }
+}
+
 pred negativeWellFormed {
     all b: Board | {
         some row, col: Int | {
@@ -25,8 +49,11 @@ pred notWellFormed {
 }
 
 test suite for wellformed {
-    assert positiveWellFormed is sufficient for wellformed 
+    assert fullBoard is sufficient for wellformed 
     assert negativeWellFormed is sufficient for notWellFormed
+    assert positiveWellFormed is necessary for wellformed
+    assert noNegativeEntryBoard is necessary for wellformed
+    assert noOverSizeEntryBoard is necessary for wellformed
 }
 
 //------------- initial -------------//
@@ -34,6 +61,20 @@ pred positiveInitial[b: Board] {
     all row, col: Int | {
         inBounds[row, col] implies no b.position[row][col]
         not inBounds[row, col] implies no b.position[row][col]
+    }
+}
+
+pred noPlayerInRow[b: Board] {
+    all row: Int | {
+        #{col: Int | b.position[row][col] = Red} = 0
+        #{col: Int | b.position[row][col] = Yellow} = 0
+    }
+}
+
+pred noPlayerInColumn[b: Board] {
+    all col: Int | {
+        #{row: Int | b.position[row][col] = Red} = 0
+        #{row: Int | b.position[row][col] = Yellow} = 0
     }
 }
 
@@ -50,6 +91,8 @@ pred notInitial[b: Board] {
 test suite for initial {
     assert all b:Board | positiveInitial[b] is sufficient for initial[b]
     assert all b:Board | negativeInitial[b] is sufficient for notInitial[b]
+    assert all b:Board | noPlayerInRow[b] is necessary for initial[b]
+    assert all b:Board | noPlayerInColumn[b] is necessary for initial[b]
 }
 
 //------------- red turn -------------//
@@ -57,6 +100,14 @@ pred positiveRedTurn[b:Board] {
     add[#{row, col: Int | b.position[row][col] = Red}, 1]
     = 
     add[#{row, col: Int | b.position[row][col] = Yellow}, 1]
+}
+
+pred RedYellowEqual[b:Board] {
+    all i : Int | {
+        add[#{row, col: Int | b.position[row][col] = Red}, i]
+        = 
+        add[#{row, col: Int | b.position[row][col] = Yellow}, i]
+    }  
 }
 
 pred negativeRedTurn[b:Board] {
@@ -72,6 +123,7 @@ pred notRedTurn[b: Board] {
 test suite for red_turn {
     assert all b:Board | positiveRedTurn[b] is sufficient for red_turn[b]
     assert all b:Board | negativeRedTurn[b] is sufficient for notRedTurn[b]
+    assert all b:Board | RedYellowEqual[b] is necessary for red_turn[b]
 }
 
 //------------- yellow turn -------------//
@@ -79,6 +131,14 @@ pred positiveYellowTurn[b:Board] {
     subtract[#{row, col: Int | b.position[row][col] = Red}, 1]
     = 
     #{row, col: Int | b.position[row][col] = Yellow}
+}
+
+pred RedMoreThanYellow[b:Board] {
+    all i : Int | {
+        add[#{row, col: Int | b.position[row][col] = Red}, i]
+        !=
+        add[#{row, col: Int | b.position[row][col] = Yellow}, i]
+    }  
 }
 
 pred negativeYellowTurn[b:Board] {
@@ -94,6 +154,7 @@ pred notYellowTurn[b: Board] {
 test suite for yellow_turn {
     assert all b:Board | positiveYellowTurn[b] is sufficient for yellow_turn[b]
     assert all b:Board | negativeYellowTurn[b] is sufficient for notYellowTurn[b]
+    assert all b:Board | RedMoreThanYellow[b] is necessary for yellow_turn[b]
 }
 
 //------------- winning -------------//
@@ -112,6 +173,31 @@ pred positiveColWin[b: Board, p: Player] {
 pred positiveDiagonalWin[b: Board, p: Player] {
     (some row1, col1: Int | b.position[row1][col1] = p and {
         #{row2, col2: Int | (subtract[row2, row1] = subtract[col2, col1]) and (b.position[row2][col2]) = p} = 4 
+    }) 
+}
+
+pred allWinning[b: Board, p: Player] {
+    -- 4 in a row
+    (some row: Int | {
+        #{col: Int | b.position[row][col] = Red} = 4 
+        or
+        #{col: Int | b.position[row][col] = Yellow} = 4 
+    }) 
+
+    or
+
+    -- 4 in a col
+    (some col: Int | {
+        #{row: Int | b.position[row][col] = Red} = 4 
+        or
+        #{row: Int | b.position[row][col] = Yellow} = 4 
+    }) 
+
+    or 
+
+    -- 4 in a diagonal
+    (some row1, col1: Int | b.position[row1][col1] = p and {
+        #{row2, col2: Int | (subtract[row1, row2] = subtract[col1, col2]) and (b.position[row2][col2]) = p} = 4 
     }) 
 }
 
@@ -142,6 +228,7 @@ test suite for winning {
     assert all b:Board, p:Player | positiveColWin[b, p] is sufficient for winning[b, p]
     assert all b:Board, p:Player | positiveDiagonalWin[b, p] is sufficient for winning[b, p]
     assert all b:Board, p:Player | negativeWinning[b, p] is sufficient for notWinning[b, p]
+    assert all b:Board, p:Player | allWinning[b, p] is necessary for winning[b, p]
 }
 
 //------------- move -------------//
@@ -169,6 +256,19 @@ pred positiveMoveRed[pre: Board,
     all row2: Int, col2: Int | (row!=row2 or col!=col2) implies {
         post.position[row2][col2] = pre.position[row2][col2]
     }
+}
+
+pred numberIncrease[pre: Board, 
+             row, col: Int, 
+             turn: Player, 
+             post: Board] {
+    (#{row, col: Int | pre.position[row][col] = Red} = #{row, col: Int | pre.position[row][col] = Yellow})
+    implies
+    (#{row, col: Int | post.position[row][col] = Red} > #{row, col: Int | post.position[row][col] = Yellow})
+
+    (#{row, col: Int | pre.position[row][col] = Red} > #{row, col: Int | pre.position[row][col] = Yellow})
+    implies
+    (#{row, col: Int | post.position[row][col] = Red} = #{row, col: Int | post.position[row][col] = Yellow})
 }
 
 pred negativeMoveIndex[pre: Board, 
@@ -246,6 +346,8 @@ test suite for move {
     // assert all pre, post:Board, row, col:Int, turn:Player | negativeMoveWinning[pre, row, col, turn, post] is sufficient for notMove[pre, row, col, turn, post] for exactly 2 Board
     assert all pre, post:Board, row, col:Int, turn:Player | negativeMovePosition[pre, row, col, turn, post] is sufficient for notMove[pre, row, col, turn, post] for exactly 2 Board
     assert all pre, post:Board, row, col:Int, turn:Player | negativeMovePost[pre, row, col, turn, post] is sufficient for notMove[pre, row, col, turn, post] for exactly 2 Board
+
+    // assert all pre, post:Board, row, col:Int, turn:Player | redMore[pre, row, col, turn, post] is necessary for move[pre, row, col, turn, post] for exactly 2 Board
 }
 
 //------------- doNothing -------------//
@@ -255,6 +357,11 @@ pred positiveDoNothingRed[pre, post: Board] {
     all r, c: Int | {
         pre.position[r][c] = post.position[r][c]
     }
+}
+
+pred numberDoesntChange[pre: Board,post: Board] {
+    (#{row, col: Int | pre.position[row][col] = Red} = #{row, col: Int | post.position[row][col] = Red})
+    (#{row, col: Int | pre.position[row][col] = Yellow} = #{row, col: Int | post.position[row][col] = Yellow})
 }
 
 //TODO: Runs too slowly
@@ -284,4 +391,5 @@ test suite for doNothing {
     assert all pre, post:Board | positiveDoNothingRed[pre, post] is sufficient for doNothing[pre, post]
     // assert all pre, post:Board | negativeDoNothingNotWinning[pre, post] is sufficient for notDoNothing[pre, post]
     assert all pre, post:Board | negativeDoNothingMoving[pre, post] is sufficient for notDoNothing[pre, post]
+    assert all pre, post:Board | numberDoesntChange[pre, post] is necessary for doNothing[pre, post]
 }
