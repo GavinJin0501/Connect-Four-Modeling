@@ -67,14 +67,14 @@ pred positiveInitial[b: Board] {
 pred noPlayerInRow[b: Board] {
     all row: Int | {
         #{col: Int | b.position[row][col] = Red} = 0
-        #{col: Int | b.position[row][col] = Black} = 0
+        #{col: Int | b.position[row][col] = Yellow} = 0
     }
 }
 
 pred noPlayerInColumn[b: Board] {
     all col: Int | {
         #{row: Int | b.position[row][col] = Red} = 0
-        #{row: Int | b.position[row][col] = Black} = 0
+        #{row: Int | b.position[row][col] = Yellow} = 0
     }
 }
 
@@ -99,21 +99,21 @@ test suite for initial {
 pred positiveRedTurn[b:Board] {
     add[#{row, col: Int | b.position[row][col] = Red}, 1]
     = 
-    add[#{row, col: Int | b.position[row][col] = Black}, 1]
+    add[#{row, col: Int | b.position[row][col] = Yellow}, 1]
 }
 
-pred RedBlackEqual[b:Board] {
+pred RedYellowEqual[b:Board] {
     all i : Int | {
         add[#{row, col: Int | b.position[row][col] = Red}, i]
         = 
-        add[#{row, col: Int | b.position[row][col] = Black}, i]
+        add[#{row, col: Int | b.position[row][col] = Yellow}, i]
     }  
 }
 
 pred negativeRedTurn[b:Board] {
     #{row, col: Int | b.position[row][col] = Red} 
     > 
-    #{row, col: Int | b.position[row][col] = Black}
+    #{row, col: Int | b.position[row][col] = Yellow}
 }
 
 pred notRedTurn[b: Board] {
@@ -123,38 +123,38 @@ pred notRedTurn[b: Board] {
 test suite for red_turn {
     assert all b:Board | positiveRedTurn[b] is sufficient for red_turn[b]
     assert all b:Board | negativeRedTurn[b] is sufficient for notRedTurn[b]
-    assert all b:Board | RedBlackEqual[b] is necessary for red_turn[b]
+    assert all b:Board | RedYellowEqual[b] is necessary for red_turn[b]
 }
 
-//------------- black turn -------------//
-pred positiveBlackTurn[b:Board] {
+//------------- yellow turn -------------//
+pred positiveYellowTurn[b:Board] {
     subtract[#{row, col: Int | b.position[row][col] = Red}, 1]
     = 
-    #{row, col: Int | b.position[row][col] = Black}
+    #{row, col: Int | b.position[row][col] = Yellow}
 }
 
-pred RedMoreThanBlack[b:Board] {
+pred RedMoreThanYellow[b:Board] {
     all i : Int | {
         add[#{row, col: Int | b.position[row][col] = Red}, i]
         !=
-        add[#{row, col: Int | b.position[row][col] = Black}, i]
+        add[#{row, col: Int | b.position[row][col] = Yellow}, i]
     }  
 }
 
-pred negativeBlackTurn[b:Board] {
+pred negativeYellowTurn[b:Board] {
     #{row, col: Int | b.position[row][col] = Red} 
     =
-    #{row, col: Int | b.position[row][col] = Black}
+    #{row, col: Int | b.position[row][col] = Yellow}
 }
 
-pred notBlackTurn[b: Board] {
-    not black_turn[b]
+pred notYellowTurn[b: Board] {
+    not yellow_turn[b]
 }
 
-test suite for black_turn {
-    assert all b:Board | positiveBlackTurn[b] is sufficient for black_turn[b]
-    assert all b:Board | negativeBlackTurn[b] is sufficient for notBlackTurn[b]
-    assert all b:Board | RedMoreThanBlack[b] is necessary for black_turn[b]
+test suite for yellow_turn {
+    assert all b:Board | positiveYellowTurn[b] is sufficient for yellow_turn[b]
+    assert all b:Board | negativeYellowTurn[b] is sufficient for notYellowTurn[b]
+    assert all b:Board | RedMoreThanYellow[b] is necessary for yellow_turn[b]
 }
 
 //------------- winning -------------//
@@ -181,7 +181,7 @@ pred allWinning[b: Board, p: Player] {
     (some row: Int | {
         #{col: Int | b.position[row][col] = Red} = 4 
         or
-        #{col: Int | b.position[row][col] = Black} = 4 
+        #{col: Int | b.position[row][col] = Yellow} = 4 
     }) 
 
     or
@@ -190,7 +190,7 @@ pred allWinning[b: Board, p: Player] {
     (some col: Int | {
         #{row: Int | b.position[row][col] = Red} = 4 
         or
-        #{row: Int | b.position[row][col] = Black} = 4 
+        #{row: Int | b.position[row][col] = Yellow} = 4 
     }) 
 
     or 
@@ -240,7 +240,7 @@ pred positiveMoveRed[pre: Board,
     -- guard: conditions necessary to make a move  
     no pre.position[row][col]
     red_turn[pre]
-    not black_turn[pre]
+    not yellow_turn[pre]
 
     -- prevent winning boards from progressing
     all p: Player | not winning[pre, p]
@@ -262,13 +262,13 @@ pred numberIncrease[pre: Board,
              row, col: Int, 
              turn: Player, 
              post: Board] {
-    (#{row, col: Int | pre.position[row][col] = Red} = #{row, col: Int | pre.position[row][col] = Black})
+    (#{row, col: Int | pre.position[row][col] = Red} = #{row, col: Int | pre.position[row][col] = Yellow})
     implies
-    (#{row, col: Int | post.position[row][col] = Red} > #{row, col: Int | post.position[row][col] = Black})
+    (#{row, col: Int | post.position[row][col] = Red} > #{row, col: Int | post.position[row][col] = Yellow})
 
-    (#{row, col: Int | pre.position[row][col] = Red} > #{row, col: Int | pre.position[row][col] = Black})
+    (#{row, col: Int | pre.position[row][col] = Red} > #{row, col: Int | pre.position[row][col] = Yellow})
     implies
-    (#{row, col: Int | post.position[row][col] = Red} = #{row, col: Int | post.position[row][col] = Black})
+    (#{row, col: Int | post.position[row][col] = Red} = #{row, col: Int | post.position[row][col] = Yellow})
 }
 
 pred negativeMoveIndex[pre: Board, 
@@ -285,7 +285,7 @@ pred negativeMoveTurn[pre: Board,
                       turn: Player, 
                       post: Board] {
     turn = Red implies not red_turn[pre]
-    turn = Black implies not black_turn[pre]
+    turn = Yellow implies not yellow_turn[pre]
 }
 
 //TODO: Runs too slowly
@@ -303,7 +303,7 @@ pred negativeMovePosition[pre: Board,
     -- satisfy all guards
     no pre.position[row][col]
     turn = Red implies red_turn[pre]
-    turn = Black implies black_turn[pre]
+    turn = Yellow implies yellow_turn[pre]
     all p: Player | not winning[pre, p]
     inBounds[row, col]
     row = 0 or some pre.position[subtract[row, 1], col]
@@ -318,7 +318,7 @@ pred negativeMovePost[pre: Board,
     -- satisfy all guards
     no pre.position[row][col]
     turn = Red implies red_turn[pre]
-    turn = Black implies black_turn[pre]
+    turn = Yellow implies yellow_turn[pre]
     all p: Player | not winning[pre, p]
     inBounds[row, col]
     row = 0 or some pre.position[subtract[row, 1], col]
@@ -361,13 +361,13 @@ pred positiveDoNothingRed[pre, post: Board] {
 
 pred numberDoesntChange[pre: Board,post: Board] {
     (#{row, col: Int | pre.position[row][col] = Red} = #{row, col: Int | post.position[row][col] = Red})
-    (#{row, col: Int | pre.position[row][col] = Black} = #{row, col: Int | post.position[row][col] = Black})
+    (#{row, col: Int | pre.position[row][col] = Yellow} = #{row, col: Int | post.position[row][col] = Yellow})
 }
 
 //TODO: Runs too slowly
 pred negativeDoNothingNotWinning[pre, post: Board] {
     not winning[pre, Red]
-    not winning[pre, Black]
+    not winning[pre, Yellow]
 
     all r, c: Int | {
         pre.position[r][c] = post.position[r][c]

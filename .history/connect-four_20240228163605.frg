@@ -154,4 +154,4 @@ pred game_trace {
     }}
 }
 
-run {game_trace} for 3 Board for {next is linear}
+run {game_trace} for 15 Board for {next is linear}

@@ -9,7 +9,7 @@ Modeling Connect Four
 -- Two players
 -- Red starts first
 abstract sig Player {} 
-one sig Red, Black extends Player {} 
+one sig Red, Yellow extends Player {} 
 
 -- A board
 sig Board {
@@ -41,14 +41,14 @@ pred initial[b: Board] {
 pred red_turn[b: Board] {
     #{row, col: Int | b.position[row][col] = Red} 
     = 
-    #{row, col: Int | b.position[row][col] = Black} 
+    #{row, col: Int | b.position[row][col] = Yellow} 
 }
 
--- predicate: Turn for the black player
-pred black_turn[b: Board] {
+-- predicate: Turn for the yellow player
+pred yellow_turn[b: Board] {
     #{row, col: Int | b.position[row][col] = Red} 
     = 
-    add[#{row, col: Int | b.position[row][col] = Black}, 1]
+    add[#{row, col: Int | b.position[row][col] = Yellow}, 1]
 }
 
 pred balanced[b: Board] {
@@ -100,7 +100,7 @@ pred move[pre: Board,
     -- it needs to be the player's turn 
     no pre.position[row][col]
     turn = Red implies red_turn[pre]
-    turn = Black implies black_turn[pre]
+    turn = Yellow implies yellow_turn[pre]
 
     -- prevent winning boards from progressing
     all p: Player | not winning[pre, p]
@@ -154,4 +154,4 @@ pred game_trace {
     }}
 }
 
-run {game_trace} for 3 Board for {next is linear}
+run {game_trace} for 15 Board for {next is linear}

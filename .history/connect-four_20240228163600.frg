@@ -45,7 +45,7 @@ pred red_turn[b: Board] {
 }
 
 -- predicate: Turn for the black player
-pred black_turn[b: Board] {
+pred yellow_turn[b: Board] {
     #{row, col: Int | b.position[row][col] = Red} 
     = 
     add[#{row, col: Int | b.position[row][col] = Black}, 1]
@@ -154,4 +154,4 @@ pred game_trace {
     }}
 }
 
-run {game_trace} for 3 Board for {next is linear}
+run {game_trace} for 15 Board for {next is linear}

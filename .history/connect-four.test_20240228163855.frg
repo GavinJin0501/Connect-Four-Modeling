@@ -127,13 +127,13 @@ test suite for red_turn {
 }
 
 //------------- black turn -------------//
-pred positiveBlackTurn[b:Board] {
+pred positiveYellowTurn[b:Board] {
     subtract[#{row, col: Int | b.position[row][col] = Red}, 1]
     = 
     #{row, col: Int | b.position[row][col] = Black}
 }
 
-pred RedMoreThanBlack[b:Board] {
+pred RedMoreThanYellow[b:Board] {
     all i : Int | {
         add[#{row, col: Int | b.position[row][col] = Red}, i]
         !=
@@ -141,20 +141,20 @@ pred RedMoreThanBlack[b:Board] {
     }  
 }
 
-pred negativeBlackTurn[b:Board] {
+pred negativeYellowTurn[b:Board] {
     #{row, col: Int | b.position[row][col] = Red} 
     =
     #{row, col: Int | b.position[row][col] = Black}
 }
 
-pred notBlackTurn[b: Board] {
+pred notYellowTurn[b: Board] {
     not black_turn[b]
 }
 
 test suite for black_turn {
-    assert all b:Board | positiveBlackTurn[b] is sufficient for black_turn[b]
-    assert all b:Board | negativeBlackTurn[b] is sufficient for notBlackTurn[b]
-    assert all b:Board | RedMoreThanBlack[b] is necessary for black_turn[b]
+    assert all b:Board | positiveYellowTurn[b] is sufficient for black_turn[b]
+    assert all b:Board | negativeYellowTurn[b] is sufficient for notYellowTurn[b]
+    assert all b:Board | RedMoreThanYellow[b] is necessary for black_turn[b]
 }
 
 //------------- winning -------------//
