@@ -172,28 +172,25 @@ test suite for black_turn {
 }
 
 //------------- winning -------------//
--- If a row has 4 , then this player should win
+-- If the number of red equals to black, then it should not be the red turn
 pred positiveRowWin[b: Board, p: Player] {
     (some row: Int | {
         #{col: Int | b.position[row][col] = p} = 4 
     }) 
 }
 
--- If a col has 4 , then this player should win
 pred positiveColWin[b: Board, p: Player] {
     (some col: Int | {
         #{row: Int | b.position[row][col] = p} = 4 
     }) 
 }
 
--- If a disgonal has 4 , then this player should win
 pred positiveDiagonalWin[b: Board, p: Player] {
     (some row1, col1: Int | b.position[row1][col1] = p and {
         #{row2, col2: Int | (subtract[row2, row1] = subtract[col2, col1]) and (b.position[row2][col2]) = p} = 4 
-    })
+    }) 
 }
 
--- A full board which has either of the 3 winning condition is winning 
 pred allWinning[b: Board, p: Player] {
     -- 4 in a row
     (some row: Int | {

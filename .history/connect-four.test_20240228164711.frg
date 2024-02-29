@@ -30,7 +30,6 @@ pred noNegativeEntryBoard {
     }
 }
 
--- Any board that has oversized entry is invalid
 pred noOverSizeEntryBoard {
     all b: Board | {
         all row, col: Int | {
@@ -61,7 +60,6 @@ test suite for wellformed {
 }
 
 //------------- initial -------------//
--- Any initial board should not has anything on it
 pred positiveInitial[b: Board] {
     all row, col: Int | {
         inBounds[row, col] implies no b.position[row][col]
@@ -69,7 +67,6 @@ pred positiveInitial[b: Board] {
     }
 }
 
--- A board which all row has no player is a valid initial board
 pred noPlayerInRow[b: Board] {
     all row: Int | {
         #{col: Int | b.position[row][col] = Red} = 0
@@ -77,7 +74,6 @@ pred noPlayerInRow[b: Board] {
     }
 }
 
--- A board which all col has no player is a valid initial board
 pred noPlayerInColumn[b: Board] {
     all col: Int | {
         #{row: Int | b.position[row][col] = Red} = 0
@@ -85,7 +81,6 @@ pred noPlayerInColumn[b: Board] {
     }
 }
 
--- Any board that has something on board is invalid
 pred negativeInitial[b: Board] {
     some row, col: Int | {
         inBounds[row, col] and some b.position[row][col]
@@ -104,14 +99,12 @@ test suite for initial {
 }
 
 //------------- red turn -------------//
--- If its a red turn, the number of red and black should be the same
 pred positiveRedTurn[b:Board] {
     add[#{row, col: Int | b.position[row][col] = Red}, 1]
     = 
     add[#{row, col: Int | b.position[row][col] = Black}, 1]
 }
 
---  If the number of red and black should be the same, then it should be the red turn
 pred RedBlackEqual[b:Board] {
     all i : Int | {
         add[#{row, col: Int | b.position[row][col] = Red}, i]
@@ -120,7 +113,6 @@ pred RedBlackEqual[b:Board] {
     }  
 }
 
---  If the number of red is larger than black, then it should not be the red turn
 pred negativeRedTurn[b:Board] {
     #{row, col: Int | b.position[row][col] = Red} 
     > 
@@ -138,14 +130,12 @@ test suite for red_turn {
 }
 
 //------------- black turn -------------//
--- If its a black turn, the number of red should be 1 greater than the number of  black
 pred positiveBlackTurn[b:Board] {
     subtract[#{row, col: Int | b.position[row][col] = Red}, 1]
     = 
     #{row, col: Int | b.position[row][col] = Black}
 }
 
--- If the number of red is greater than the number of  black, then its black turn
 pred RedMoreThanBlack[b:Board] {
     all i : Int | {
         add[#{row, col: Int | b.position[row][col] = Red}, i]
@@ -154,7 +144,6 @@ pred RedMoreThanBlack[b:Board] {
     }  
 }
 
--- If the number of red equals to black, then it should not be the red turn
 pred negativeBlackTurn[b:Board] {
     #{row, col: Int | b.position[row][col] = Red} 
     =
@@ -172,28 +161,24 @@ test suite for black_turn {
 }
 
 //------------- winning -------------//
--- If a row has 4 , then this player should win
 pred positiveRowWin[b: Board, p: Player] {
     (some row: Int | {
         #{col: Int | b.position[row][col] = p} = 4 
     }) 
 }
 
--- If a col has 4 , then this player should win
 pred positiveColWin[b: Board, p: Player] {
     (some col: Int | {
         #{row: Int | b.position[row][col] = p} = 4 
     }) 
 }
 
--- If a disgonal has 4 , then this player should win
 pred positiveDiagonalWin[b: Board, p: Player] {
     (some row1, col1: Int | b.position[row1][col1] = p and {
         #{row2, col2: Int | (subtract[row2, row1] = subtract[col2, col1]) and (b.position[row2][col2]) = p} = 4 
-    })
+    }) 
 }
 
--- A full board which has either of the 3 winning condition is winning 
 pred allWinning[b: Board, p: Player] {
     -- 4 in a row
     (some row: Int | {

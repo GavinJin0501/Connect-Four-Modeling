@@ -190,10 +190,10 @@ pred positiveColWin[b: Board, p: Player] {
 pred positiveDiagonalWin[b: Board, p: Player] {
     (some row1, col1: Int | b.position[row1][col1] = p and {
         #{row2, col2: Int | (subtract[row2, row1] = subtract[col2, col1]) and (b.position[row2][col2]) = p} = 4 
-    })
+    }) 
 }
 
--- A full board which has either of the 3 winning condition is winning 
+-- A full board which has
 pred allWinning[b: Board, p: Player] {
     -- 4 in a row
     (some row: Int | {

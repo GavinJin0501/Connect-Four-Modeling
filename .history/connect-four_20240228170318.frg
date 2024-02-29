@@ -64,40 +64,32 @@ pred winning[b: Board, p: Player] {
     some row1, col1: Int | b.position[row1][col1] = p and {
         -- 4 in a row
         #{col2: Int | col2 >= col1 and subtract[col2, col1] < 4 and b.position[row1][col2] = p} = 4
-        
         or
 
         -- 4 in a column
-        #{row2: Int | row2 >= row1 and subtract[row2, row1] < 4 and b.position[row2][col1] = p} = 4
-
-        or
-
-        -- 4 in a diagonal
-        #{row2, col2: Int | (subtract[row1, row2] = subtract[col1, col2]) 
-                             and (b.position[row2][col2]) = p
-                             and subtract[row2, row1] < 4} = 4 
+        #{}
     }
 
-    // some row, col1: Int | b.position[row][col1] = p and {
-    //     #{col2: Int | col2 >= col1 and subtract[col2, col1] < 4 and b.position[row][col2] = p} = 4
-    // }
+    some row, col1: Int | b.position[row][col1] = p and {
+        #{col2: Int | col2 >= col1 and subtract[col2, col1] < 4 and b.position[row][col2] = p} = 4
+    }
 
-    // or
+    or
 
-    // -- 4 in a col
-    // // (some col: Int | {
-    // //     #{row: Int | b.position[row][col] = p} = 4 
-    // // }) 
-    // some row1, col: Int | b.position[row1][col1] = p and {
-    //     #{row2: Int | row2 >= row1 and subtract[row2, row1] < 4 and b.position[row2][col] = p} = 4
-    // }
-
-    // or 
-
-    // -- 4 in a diagonal
-    // (some row1, col1: Int | b.position[row1][col1] = p and {
-    //     #{row2, col2: Int | (subtract[row1, row2] = subtract[col1, col2]) and (b.position[row2][col2]) = p} = 4 
+    -- 4 in a col
+    // (some col: Int | {
+    //     #{row: Int | b.position[row][col] = p} = 4 
     // }) 
+    some row1, col: Int | b.position[row1][col1] = p and {
+        #{row2: Int | row2 >= row1 and subtract[row2, row1] < 4 and b.position[row2][col] = p} = 4
+    }
+
+    or 
+
+    -- 4 in a diagonal
+    (some row1, col1: Int | b.position[row1][col1] = p and {
+        #{row2, col2: Int | (subtract[row1, row2] = subtract[col1, col2]) and (b.position[row2][col2]) = p} = 4 
+    }) 
 }
 
 // pred tie[b: Board, p1, p2: Player] {
@@ -170,14 +162,12 @@ pred game_trace {
     // some g: Board | {
     //     winning[g, Red]    
     // }
-    all b: Board | { 
-        some Game.next[b] implies {
-            (some row, col: Int, p: Player | move[b, row, col, p, Game.next[b]])
-            or
-            doNothing[b, Game.next[b]]
-        }
-        no Game.next[b] implies (winning[b, Red] or winning[b, Black])
-    }
+    all b: Board | { some Game.next[b] implies {
+        (some row, col: Int, p: Player | 
+            move[b, row, col, p, Game.next[b]])
+        or
+        doNothing[b, Game.next[b]]
+    }}
 }
 
-run {game_trace} for 10 Board for {next is linear}
+run {game_trace} for 3 Board for {next is linear}

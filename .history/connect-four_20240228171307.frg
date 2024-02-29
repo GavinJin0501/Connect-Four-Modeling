@@ -167,17 +167,15 @@ one sig Game {
 pred game_trace {
     wellformed
     initial[Game.first]
-    // some g: Board | {
-    //     winning[g, Red]    
-    // }
-    all b: Board | { 
-        some Game.next[b] implies {
-            (some row, col: Int, p: Player | move[b, row, col, p, Game.next[b]])
-            or
-            doNothing[b, Game.next[b]]
-        }
-        no Game.next[b] implies (winning[b, Red] or winning[b, Black])
+    some g: Board | {
+        winning[g, Red]    
     }
+    all b: Board | { some Game.next[b] implies {
+        (some row, col: Int, p: Player | 
+            move[b, row, col, p, Game.next[b]])
+        or
+        doNothing[b, Game.next[b]]
+    }}
 }
 
-run {game_trace} for 10 Board for {next is linear}
+run {game_trace} for  Board for {next is linear}

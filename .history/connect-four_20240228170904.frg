@@ -170,14 +170,12 @@ pred game_trace {
     // some g: Board | {
     //     winning[g, Red]    
     // }
-    all b: Board | { 
-        some Game.next[b] implies {
-            (some row, col: Int, p: Player | move[b, row, col, p, Game.next[b]])
-            or
-            doNothing[b, Game.next[b]]
-        }
-        no Game.next[b] implies (winning[b, Red] or winning[b, Black])
-    }
+    all b: Board | { some Game.next[b] implies {
+        (some row, col: Int, p: Player | 
+            move[b, row, col, p, Game.next[b]])
+        or
+        doNothing[b, Game.next[b]]
+    }}
 }
 
-run {game_trace} for 10 Board for {next is linear}
+run {game_trace} for 15 Board for {next is linear}
