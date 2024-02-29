@@ -174,67 +174,67 @@ test suite for black_turn {
 //------------- winning -------------//
 -- If a row has 4 , then this player should win
 pred positiveRowWin[b: Board, p: Player] {
-    (some row: Int | {
-        #{col: Int | b.position[row][col] = p} = 4 
-    }) 
+    some row1, col1: Int | {
+        b.position[row1][col1] = p
+        #{col2: Int | col2 >= col1 and subtract[col2, col1] < 4 and b.position[row1][col2] = p} = 4
+    }
 }
 
 -- If a col has 4 , then this player should win
 pred positiveColWin[b: Board, p: Player] {
-    (some col: Int | {
-        #{row: Int | b.position[row][col] = p} = 4 
-    }) 
+    some row1, col1: Int | {
+        b.position[row1][col1] = p
+        #{row2: Int | row2 >= row1 and subtract[row2, row1] < 4 and b.position[row2][col1] = p} = 4
+    }
 }
 
 -- If a disgonal has 4 , then this player should win
 pred positiveDiagonalWin[b: Board, p: Player] {
-    (some row1, col1: Int | b.position[row1][col1] = p and {
-        #{row2, col2: Int | (subtract[row2, row1] = subtract[col2, col1]) and (b.position[row2][col2]) = p} = 4 
-    })
+     some row1, col1: Int | {
+        b.position[row1][col1] = p
+        #{row2, col2: Int | (subtract[row1, row2] = subtract[col1, col2]) 
+                             and (b.position[row2][col2]) = p
+                             and subtract[row2, row1] < 4} = 4 
+     }
 }
 
 -- A full board which has either of the 3 winning condition is winning 
 pred allWinning[b: Board, p: Player] {
-    -- 4 in a row
-    (some row: Int | {
-        #{col: Int | b.position[row][col] = Red} = 4 
+    some row1, col1: Int | b.position[row1][col1] = p and {
+        -- 4 in a row
+        #{col2: Int | col2 >= col1 and subtract[col2, col1] < 4 and b.position[row1][col2] = p} = 4
+        
         or
-        #{col: Int | b.position[row][col] = Black} = 4 
-    }) 
 
-    or
+        -- 4 in a column
+        #{row2: Int | row2 >= row1 and subtract[row2, row1] < 4 and b.position[row2][col1] = p} = 4
 
-    -- 4 in a col
-    (some col: Int | {
-        #{row: Int | b.position[row][col] = Red} = 4 
         or
-        #{row: Int | b.position[row][col] = Black} = 4 
-    }) 
 
-    or 
-
-    -- 4 in a diagonal
-    (some row1, col1: Int | b.position[row1][col1] = p and {
-        #{row2, col2: Int | (subtract[row1, row2] = subtract[col1, col2]) and (b.position[row2][col2]) = p} = 4 
-    }) 
+        -- 4 in a diagonal
+        #{row2, col2: Int | (subtract[row1, row2] = subtract[col1, col2]) 
+                             and (b.position[row2][col2]) = p
+                             and subtract[row2, row1] < 4} = 4 
+    }
 }
 
 pred negativeWinning[b: Board, p: Player] {
-    (all row: Int | {
-        #{col: Int | b.position[row][col] = p} < 4 
-    }) 
+    all row1, col1: Int | b.position[row1][col1] = p and {
+        -- 4 in a row
+        #{col2: Int | col2 >= col1 and subtract[col2, col1] < 4 and b.position[row1][col2] = p} < 4
+        
+        and
 
-    and
+        -- 4 in a column
+        #{row2: Int | row2 >= row1 and subtract[row2, row1] < 4 and b.position[row2][col1] = p} < 4
 
-    (all col: Int | {
-        #{row: Int | b.position[row][col] = p} < 4 
-    }) 
+        and
 
-    and
-
-    (all row1, col1: Int | b.position[row1][col1] = p and {
-        #{row2, col2: Int | (subtract[row2, row1] = subtract[col2, col1]) and (b.position[row2][col2]) = p} < 4 
-    }) 
+        -- 4 in a diagonal
+        #{row2, col2: Int | (subtract[row1, row2] = subtract[col1, col2]) 
+                             and (b.position[row2][col2]) = p
+                             and subtract[row2, row1] < 4} < 4 
+    }
 }
 
 pred notWinning[b: Board, p: Player] {
@@ -250,32 +250,28 @@ test suite for winning {
 }
 
 //------------- move -------------//
+-- A move with red turn and not black turn is a valid move
 pred positiveMoveRed[pre: Board, 
                     row, col: Int, 
                     turn: Player, 
                     post: Board] {
     turn = Red
-    -- guard: conditions necessary to make a move  
     no pre.position[row][col]
     red_turn[pre]
     not black_turn[pre]
 
-    -- prevent winning boards from progressing
     all p: Player | not winning[pre, p]
 
-    -- enforce valid move index
     inBounds[row, col]
     row = 0 or some pre.position[subtract[row, 1], col]
 
-    -- mark the location with the player 
     post.position[row][col] = turn 
-    -- updating the board; check for winner or tie 
-    -- other squares stay the same  ("frame condition")
     all row2: Int, col2: Int | (row!=row2 or col!=col2) implies {
         post.position[row2][col2] = pre.position[row2][col2]
     }
 }
 
+-- A move should increase the number of players on board (either red or black)
 pred numberIncrease[pre: Board, 
              row, col: Int, 
              turn: Player, 
@@ -289,6 +285,7 @@ pred numberIncrease[pre: Board,
     (#{row, col: Int | post.position[row][col] = Red} = #{row, col: Int | post.position[row][col] = Black})
 }
 
+--  A move should not be on the place where there is already a player
 pred negativeMoveIndex[pre: Board, 
                           row, col: Int, 
                           turn: Player, 
@@ -298,6 +295,7 @@ pred negativeMoveIndex[pre: Board,
     no pre.position[subtract[row, 1], col]
 }
 
+--  A move should not be with the wrong player turn
 pred negativeMoveTurn[pre: Board, 
                       row, col: Int, 
                       turn: Player, 
@@ -306,6 +304,7 @@ pred negativeMoveTurn[pre: Board,
     turn = Black implies not black_turn[pre]
 }
 
+-- When a move is made, there should not be winning
 pred negativeMoveWinning[pre: Board, 
                          row, col: Int, 
                          turn: Player, 
@@ -313,6 +312,7 @@ pred negativeMoveWinning[pre: Board,
     winning[pre, turn]
 }
 
+--  A move should not be on invalid board position
 pred negativeMovePosition[pre: Board, 
                          row, col: Int, 
                          turn: Player, 
@@ -328,6 +328,7 @@ pred negativeMovePosition[pre: Board,
     post.position[row][col] != turn
 }
 
+-- After moving, other positions on the board should not be changed
 pred negativeMovePost[pre: Board, 
                          row, col: Int, 
                          turn: Player, 
@@ -368,6 +369,7 @@ test suite for move {
 }
 
 //------------- doNothing -------------//
+-- If Red has won, then should do nothing
 pred positiveDoNothingRed[pre, post: Board] {
     some p: Player | p = Red and winning[pre, p]
 
@@ -376,11 +378,13 @@ pred positiveDoNothingRed[pre, post: Board] {
     }
 }
 
+-- If Red has won, then should do nothing
 pred numberDoesntChange[pre: Board,post: Board] {
     (#{row, col: Int | pre.position[row][col] = Red} = #{row, col: Int | post.position[row][col] = Red})
     (#{row, col: Int | pre.position[row][col] = Black} = #{row, col: Int | post.position[row][col] = Black})
 }
 
+-- If both Red and Black are not winning, then there should not be doing nothing
 pred negativeDoNothingNotWinning[pre, post: Board] {
     not winning[pre, Red]
     not winning[pre, Black]
@@ -390,6 +394,7 @@ pred negativeDoNothingNotWinning[pre, post: Board] {
     }
 }
 
+-- If do nothing, then nothing on the board should change
 pred negativeDoNothingMoving[pre, post: Board] {
     some p: Player | winning[pre, p]
 
